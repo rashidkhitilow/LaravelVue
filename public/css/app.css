@@ -8878,7 +8878,7 @@ body,
   float: left;
   line-height: .8;
   max-height: 34px;
-  width: 34px;
+  width: auto;
   margin-left: .8rem;
   margin-right: .5rem;
   margin-top: -3px;
@@ -8927,8 +8927,8 @@ body,
 }
 
 .user-panel img {
-  width: 34px;
-  height: 34px;
+  width: 2.1rem;
+  height: auto;
 }
 
 .user-panel .info {
@@ -29620,5 +29620,56 @@ readers do not read off random characters that represent icons */
 .navbar-laravel {
   background-color: #fff;
   box-shadow: 0 2px 4px rgba(0, 0, 0, 0.04);
+}
+
+/* my codes */
+
+.router-link-exact-active {
+  background-color: #007bff;
+  color: #ffffff !important;
+}
+
+.router-link-exact-active i {
+  color: #ffffff !important;
+}
+
+.blue {
+  color: #3490dc;
+}
+
+.indigo {
+  color: #6574cd;
+}
+
+.purple {
+  color: #9561e2;
+}
+
+.pink {
+  color: #f66D9b;
+}
+
+.red {
+  color: #e3342f;
+}
+
+.orange {
+  color: #f6993f;
+}
+
+.yellow {
+  color: #ffed4a;
+}
+
+.green {
+  color: #38c172;
+}
+
+.teal {
+  color: #4dc0b5;
+}
+
+.cyan {
+  color: #6cb2eb;
 }
 
