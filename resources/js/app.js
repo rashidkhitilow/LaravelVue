@@ -8,17 +8,57 @@
 require('./bootstrap');
 
 window.Vue = require('vue');
+//sweetalert
+import Swal from 'sweetalert2'
+window.Swal=Swal
+window.Toast=Toast
+const Toast = Swal.mixin({
+    toast: true,
+    position: 'top-end',
+    showConfirmButton: false,
+    timer: 3000
+  })
+
+// vue progressbar
+import VueProgressBar from 'vue-progressbar'
+Vue.use(VueProgressBar, {
+    color: 'rgb(143, 255, 199)',
+    failedColor: 'red',
+    height: '2px'
+})
+
+// moment filters
+import moment from 'moment'
+Vue.filter('customDate', function (createdAt) {
+    return moment(createdAt).format('MMMM Do YYYY');
+})
+// capitalize filters
+Vue.filter('capitalize', function (value) {
+    if (!value) return ''
+    value = value.toString()
+    return value.charAt(0).toUpperCase() + value.slice(1)
+})
+
+
+import { Form, HasError, AlertError } from 'vform'
+window.Form = Form;
+Vue.component(HasError.name, HasError)
+Vue.component(AlertError.name, AlertError)
+
+// router part
 import VueRouter from 'vue-router'
 Vue.use(VueRouter)
-let routes =[
-    {path:'/dashboard',component: require('./components/Dashboard.vue').default},
-    {path:'/profile',component: require('./components/Profile.vue').default}
+let routes = [
+    { path: '/dashboard', component: require('./components/Dashboard.vue').default },
+    { path: '/profile', component: require('./components/Profile.vue').default },
+    { path: '/users', component: require('./components/Users.vue').default }
 ]
 
 const router = new VueRouter({
     mode: 'history',
     routes
 })
+
 
 
 /**
