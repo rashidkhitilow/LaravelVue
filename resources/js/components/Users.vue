@@ -6,7 +6,7 @@
           <div class="box-header">
             <h3 class="box-title">Responsive Hover Table</h3>
             <div class="box-tools">
-              <button class="btn btn-success pull-right" data-toggle="modal" data-target="#adduser">
+              <button class="btn btn-success pull-right" @click="addUserModal">
                 Add User
                 <i class="fas fa-user-plus fa-fw"></i>
               </button>
@@ -36,10 +36,10 @@
                   </td>
                   <td>{{user.created_at | customDate}}</td>
                   <td>
-                    <a href>
+                    <a href="#" @click="editUserModal(user)">
                       <i class="fas fa-edit green"></i>
                     </a>
-                    <a href>
+                    <a href="#" @click="deleteUser(user.id)">
                       <i class="fas fa-trash red"></i>
                     </a>
                   </td>
@@ -60,7 +60,7 @@
               <span aria-hidden="true">×</span>
             </button>
           </div>
-          <form @submit.prevent="createUser">
+          <form @submit.prevent="addmode ? createUser() :updateUser() ">
             <div class="modal-body">
               <div class="form-group">
                 <input
@@ -125,7 +125,7 @@
             </div>
             <div class="modal-footer">
               <button type="button" class="btn btn-danger pull-left" data-dismiss="modal">Close</button>
-              <button type="submit" class="btn btn-primary">Create</button>
+              <button type="submit" class="btn btn-primary"></button>
             </div>
           </form>
         </div>
@@ -141,8 +141,10 @@ export default {
   data() {
     return {
       // Create a new form instance
+      addmode: true,
       users: {},
       form: new Form({
+        id: "",
         name: "",
         email: "",
         type: "",
@@ -153,21 +155,103 @@ export default {
     };
   },
   methods: {
+    addUserModal() {
+      this.form.reset();
+      $("#adduser").modal("show");
+      this.addmode = true;
+      $("#adduser button[type='submit']").html("");
+      $("#adduser button[type='submit']").html("Create");
+    },
+    editUserModal(user) {
+      this.form.reset();
+      $("#adduser").modal("show");
+      this.addmode = false;
+      $("#adduser button[type='submit']").html("");
+      $("#adduser button[type='submit']").html("Update");
+      this.form.fill(user);
+    },
     loadUsers() {
       axios.get("api/user").then(({ data }) => (this.users = data.data));
     },
     createUser() {
       this.$Progress.start();
-      this.form.post("api/user");
-      Toast.fire({
-          type: "success",
-        title: "Signed in successfully"
-      });
+      this.form.post("api/user").then(
+        data => {
+          if (data.status == 200) {
+            Toast.fire({
+              type: "success",
+              title: "Signed in successfully"
+            });
+            Fire.$emit("afterCrud");
+            $("#adduser").modal("hide");
+            this.form.reset();
+          }
+        },
+        error => {
+          console.log(error.response);
+          if (error.response.status == 422) {
+            Toast.fire({
+              type: "error",
+              title: "Signed in Unsuccessfully"
+            });
+          }
+          this.$Progress.fail();
+        }
+      );
       this.$Progress.finish();
+    },
+    updateUser() {
+      this.$Progress.start();
+      this.form
+        .put("api/user/" + this.form.id)
+        .then(() => {
+          Toast.fire({
+            type: "success",
+            title: "Signed in successfully"
+          });
+          Fire.$emit("afterCrud");
+          $("#adduser").modal("hide");
+          this.form.reset();
+        })
+        .catch(() => {
+          Toast.fire({
+            type: "error",
+            title: "Signed in Unsuccessfully"
+          });
+          this.$Progress.fail();
+        });
+      this.$Progress.finish();
+    },
+    deleteUser(id) {
+      Swal.fire({
+        title: "Are you sure?",
+        text: "You won't be able to revert this!",
+        type: "warning",
+        showCancelButton: true,
+        confirmButtonColor: "#3085d6",
+        cancelButtonColor: "#d33",
+        confirmButtonText: "Yes, delete it!"
+      }).then(result => {
+        if (result.value) {
+          //   send data to server , laravel destroy method
+          this.form
+            .delete("api/user/" + id)
+            .then(() => {
+              Swal.fire("Deleted!", "User has been deleted.", "success");
+              Fire.$emit("afterCrud");
+            })
+            .catch(() => {
+              Swal.fire("Failed!", "User has not been deleted.", "error");
+            });
+        }
+      });
     }
   },
   created() {
     this.loadUsers();
+    Fire.$on("afterCrud", () => {
+      this.loadUsers();
+    });
   }
 };
 </script>

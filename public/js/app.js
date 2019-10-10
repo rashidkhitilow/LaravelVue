@@ -1955,8 +1955,10 @@ __webpack_require__.r(__webpack_exports__);
   data: function data() {
     return {
       // Create a new form instance
+      addmode: true,
       users: {},
       form: new Form({
+        id: "",
         name: "",
         email: "",
         type: "",
@@ -1967,6 +1969,21 @@ __webpack_require__.r(__webpack_exports__);
     };
   },
   methods: {
+    addUserModal: function addUserModal() {
+      this.form.reset();
+      $("#adduser").modal("show");
+      this.addmode = true;
+      $("#adduser button[type='submit']").html("");
+      $("#adduser button[type='submit']").html("Create");
+    },
+    editUserModal: function editUserModal(user) {
+      this.form.reset();
+      $("#adduser").modal("show");
+      this.addmode = false;
+      $("#adduser button[type='submit']").html("");
+      $("#adduser button[type='submit']").html("Update");
+      this.form.fill(user);
+    },
     loadUsers: function loadUsers() {
       var _this = this;
 
@@ -1976,17 +1993,88 @@ __webpack_require__.r(__webpack_exports__);
       });
     },
     createUser: function createUser() {
+      var _this2 = this;
+
       this.$Progress.start();
-      this.form.post("api/user");
-      Toast.fire({
-        type: "success",
-        title: "Signed in successfully"
+      this.form.post("api/user").then(function (data) {
+        if (data.status == 200) {
+          Toast.fire({
+            type: "success",
+            title: "Signed in successfully"
+          });
+          Fire.$emit("afterCrud");
+          $("#adduser").modal("hide");
+
+          _this2.form.reset();
+        }
+      }, function (error) {
+        console.log(error.response);
+
+        if (error.response.status == 422) {
+          Toast.fire({
+            type: "error",
+            title: "Signed in Unsuccessfully"
+          });
+        }
+
+        _this2.$Progress.fail();
       });
       this.$Progress.finish();
+    },
+    updateUser: function updateUser() {
+      var _this3 = this;
+
+      this.$Progress.start();
+      this.form.put("api/user/" + this.form.id).then(function () {
+        Toast.fire({
+          type: "success",
+          title: "Signed in successfully"
+        });
+        Fire.$emit("afterCrud");
+        $("#adduser").modal("hide");
+
+        _this3.form.reset();
+      })["catch"](function () {
+        Toast.fire({
+          type: "error",
+          title: "Signed in Unsuccessfully"
+        });
+
+        _this3.$Progress.fail();
+      });
+      this.$Progress.finish();
+    },
+    deleteUser: function deleteUser(id) {
+      var _this4 = this;
+
+      Swal.fire({
+        title: "Are you sure?",
+        text: "You won't be able to revert this!",
+        type: "warning",
+        showCancelButton: true,
+        confirmButtonColor: "#3085d6",
+        cancelButtonColor: "#d33",
+        confirmButtonText: "Yes, delete it!"
+      }).then(function (result) {
+        if (result.value) {
+          //   send data to server , laravel destroy method
+          _this4.form["delete"]("api/user/" + id).then(function () {
+            Swal.fire("Deleted!", "User has been deleted.", "success");
+            Fire.$emit("afterCrud");
+          })["catch"](function () {
+            Swal.fire("Failed!", "User has not been deleted.", "error");
+          });
+        }
+      });
     }
   },
   created: function created() {
+    var _this5 = this;
+
     this.loadUsers();
+    Fire.$on("afterCrud", function () {
+      _this5.loadUsers();
+    });
   }
 });
 
@@ -58978,14 +59066,32 @@ var render = function() {
     _c("div", { staticClass: "row pt-5" }, [
       _c("div", { staticClass: "col-md-12" }, [
         _c("div", { staticClass: "box" }, [
-          _vm._m(0),
+          _c("div", { staticClass: "box-header" }, [
+            _c("h3", { staticClass: "box-title" }, [
+              _vm._v("Responsive Hover Table")
+            ]),
+            _vm._v(" "),
+            _c("div", { staticClass: "box-tools" }, [
+              _c(
+                "button",
+                {
+                  staticClass: "btn btn-success pull-right",
+                  on: { click: _vm.addUserModal }
+                },
+                [
+                  _vm._v("\n              Add User\n              "),
+                  _c("i", { staticClass: "fas fa-user-plus fa-fw" })
+                ]
+              )
+            ])
+          ]),
           _vm._v(" "),
           _c("div", { staticClass: "box-body table-responsive no-padding" }, [
             _c("table", { staticClass: "table table-hover" }, [
               _c(
                 "tbody",
                 [
-                  _vm._m(1),
+                  _vm._m(0),
                   _vm._v(" "),
                   _vm._l(_vm.users, function(user, index) {
                     return _c("tr", { key: index }, [
@@ -59014,7 +59120,33 @@ var render = function() {
                         _vm._v(_vm._s(_vm._f("customDate")(user.created_at)))
                       ]),
                       _vm._v(" "),
-                      _vm._m(2, true)
+                      _c("td", [
+                        _c(
+                          "a",
+                          {
+                            attrs: { href: "#" },
+                            on: {
+                              click: function($event) {
+                                return _vm.editUserModal(user)
+                              }
+                            }
+                          },
+                          [_c("i", { staticClass: "fas fa-edit green" })]
+                        ),
+                        _vm._v(" "),
+                        _c(
+                          "a",
+                          {
+                            attrs: { href: "#" },
+                            on: {
+                              click: function($event) {
+                                return _vm.deleteUser(user.id)
+                              }
+                            }
+                          },
+                          [_c("i", { staticClass: "fas fa-trash red" })]
+                        )
+                      ])
                     ])
                   })
                 ],
@@ -59036,7 +59168,7 @@ var render = function() {
       [
         _c("div", { staticClass: "modal-dialog" }, [
           _c("div", { staticClass: "modal-content" }, [
-            _vm._m(3),
+            _vm._m(1),
             _vm._v(" "),
             _c(
               "form",
@@ -59044,7 +59176,7 @@ var render = function() {
                 on: {
                   submit: function($event) {
                     $event.preventDefault()
-                    return _vm.createUser($event)
+                    _vm.addmode ? _vm.createUser() : _vm.updateUser()
                   }
                 }
               },
@@ -59270,7 +59402,7 @@ var render = function() {
                   )
                 ]),
                 _vm._v(" "),
-                _vm._m(4)
+                _vm._m(2)
               ]
             )
           ])
@@ -59280,30 +59412,6 @@ var render = function() {
   ])
 }
 var staticRenderFns = [
-  function() {
-    var _vm = this
-    var _h = _vm.$createElement
-    var _c = _vm._self._c || _h
-    return _c("div", { staticClass: "box-header" }, [
-      _c("h3", { staticClass: "box-title" }, [
-        _vm._v("Responsive Hover Table")
-      ]),
-      _vm._v(" "),
-      _c("div", { staticClass: "box-tools" }, [
-        _c(
-          "button",
-          {
-            staticClass: "btn btn-success pull-right",
-            attrs: { "data-toggle": "modal", "data-target": "#adduser" }
-          },
-          [
-            _vm._v("\n              Add User\n              "),
-            _c("i", { staticClass: "fas fa-user-plus fa-fw" })
-          ]
-        )
-      ])
-    ])
-  },
   function() {
     var _vm = this
     var _h = _vm.$createElement
@@ -59320,20 +59428,6 @@ var staticRenderFns = [
       _c("th", [_vm._v("Created At")]),
       _vm._v(" "),
       _c("th", [_vm._v("Modify")])
-    ])
-  },
-  function() {
-    var _vm = this
-    var _h = _vm.$createElement
-    var _c = _vm._self._c || _h
-    return _c("td", [
-      _c("a", { attrs: { href: "" } }, [
-        _c("i", { staticClass: "fas fa-edit green" })
-      ]),
-      _vm._v(" "),
-      _c("a", { attrs: { href: "" } }, [
-        _c("i", { staticClass: "fas fa-trash red" })
-      ])
     ])
   },
   function() {
@@ -59369,11 +59463,10 @@ var staticRenderFns = [
         [_vm._v("Close")]
       ),
       _vm._v(" "),
-      _c(
-        "button",
-        { staticClass: "btn btn-primary", attrs: { type: "submit" } },
-        [_vm._v("Create")]
-      )
+      _c("button", {
+        staticClass: "btn btn-primary",
+        attrs: { type: "submit" }
+      })
     ])
   }
 ]
@@ -74451,17 +74544,19 @@ __webpack_require__.r(__webpack_exports__);
  */
 __webpack_require__(/*! ./bootstrap */ "./resources/js/bootstrap.js");
 
-window.Vue = __webpack_require__(/*! vue */ "./node_modules/vue/dist/vue.common.js"); //sweetalert
+window.Vue = __webpack_require__(/*! vue */ "./node_modules/vue/dist/vue.common.js"); // Fire
+
+window.Fire = new Vue(); //sweetalert
 
 
 window.Swal = sweetalert2__WEBPACK_IMPORTED_MODULE_0___default.a;
-window.Toast = Toast;
 var Toast = sweetalert2__WEBPACK_IMPORTED_MODULE_0___default.a.mixin({
   toast: true,
   position: 'top-end',
   showConfirmButton: false,
   timer: 3000
-}); // vue progressbar
+});
+window.Toast = Toast; // vue progressbar
 
 
 Vue.use(vue_progressbar__WEBPACK_IMPORTED_MODULE_1___default.a, {

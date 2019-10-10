@@ -8,16 +8,19 @@
 require('./bootstrap');
 
 window.Vue = require('vue');
+// Fire
+window.Fire=new Vue();
+
 //sweetalert
 import Swal from 'sweetalert2'
 window.Swal=Swal
-window.Toast=Toast
 const Toast = Swal.mixin({
     toast: true,
     position: 'top-end',
     showConfirmButton: false,
     timer: 3000
-  })
+})
+window.Toast=Toast
 
 // vue progressbar
 import VueProgressBar from 'vue-progressbar'
