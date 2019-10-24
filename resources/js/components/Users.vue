@@ -1,6 +1,6 @@
 <template>
   <div class="container">
-    <div class="row pt-5">
+    <div class="row pt-3">
       <div class="col-md-12">
         <div class="box">
           <div class="box-header">

@@ -9,6 +9,11 @@ use Illuminate\Support\Facades\Hash;
 
 class UserController extends Controller
 {
+    public function __construct()
+    {
+        $this->middleware('auth:api');
+    }
+
     /**
      * Display a listing of the resource.
      * Client ID: 1
@@ -52,6 +57,39 @@ class UserController extends Controller
     public function show($id)
     {
         //
+    }
+
+
+    public function profile()
+    {
+        return auth('api')->user();
+    }
+    public function updateProfile(Request $request)
+    {
+        $user = auth('api')->user();
+        $name = '';
+        $currentPhoto = $user->photo;
+        if ($request->photo && $request->photo != $currentPhoto) {
+            $image = $request->photo;
+            $name = time() . '.' . explode('/', explode(':', substr($image, 0, strpos($image, ';')))[1])[1];
+            \Image::make($request->photo)->save(public_path('img/profile/') . $name);
+            $newPhoto = $request->merge(['photo' => $name]);
+        }
+        if (!empty($request->password)) {
+            $request->merge(['password' => Hash::make($request['password'])]);
+        }
+        $userPhoto = public_path('img/profile/') . $currentPhoto;
+        if (file_exists($userPhoto)) {
+            @unlink($userPhoto);
+        }
+        // $this->validate($request, [
+        //     'name' => ['required', 'min:3'],
+        //     'email' => 'unique:users,email,' . $user->id,
+        // ]);
+        dd($request);
+        $user->update($request->all());
+
+        return response()->json(['success' => 'You have successfully updated'], 200);
     }
 
     /**
